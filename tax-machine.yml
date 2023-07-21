@@ -1,0 +1,28 @@
+statechart:
+  name: Deutschland Maschine
+  preamble: |
+    wePreferToWait = True
+  root state:
+    name: Yet another Deutschland Maschine
+    initial: Out of the Market
+    states:
+      - name: Out of the Market
+        transitions:
+          - target: In the Market
+            event: buy signal fired
+          - target: Slice and Sell
+            event: sell signal fired
+            guard: not wePreferToWait
+          - target: Wait for Prescribed Holding Period
+            event: sell signal fired
+            guard: wePreferToWait
+        states:
+          - name: Slice and Sell
+          - name: Wait for Prescribed Holding Period
+            transitions:
+             - target: Slice and Sell
+               event: Holding Period is over
+      - name: In the Market
+        transitions:
+          - target: Out of the Market
+            event: sell signal fired
