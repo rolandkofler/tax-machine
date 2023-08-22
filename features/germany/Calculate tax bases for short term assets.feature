@@ -5,7 +5,7 @@ Feature: Calculate tax bases for short term assets
   User Need:  To make an informed decision regarding taxes before selling a FIFO position, even in the short term.
   Acceptance Criteria:
     The system should identify the earliest trade within the wallet and track it as the first position to be sold (FIFO).
-    The system should notify the user to sell a FIFO position if the loss balance is greater than or equal to the profit.
+    The system should show 0 EUR tax base if the loss balance is greater than or equal to the profit.
     The system should consider the cost basis of each individual wallet for the FIFO calculation and should not include trades outside of the wallet.
   Background Information:
   - In German tax accounting, FIFO is used, where the earliest trade made is the first one to be sold.

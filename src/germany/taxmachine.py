@@ -26,6 +26,7 @@ class TaxMachine:
             }
         )
 
+    # deprecated
     def approve(
         self,
         sell,
@@ -59,7 +60,7 @@ class TaxMachine:
         :return: taxation table for different FIFO positions needed for the transaction
         """
 
-        remainder = amount
+        remainder = Decimal(amount)
         # create a copy of the account balance
         account_balance = self.account_balance[currency].copy()
         # sort the account balance by buy_date
@@ -67,17 +68,17 @@ class TaxMachine:
         taxation_table = []
         for row in account_balance:
             # check if the position is older than 'when' assuming all positions are sorted by buy_date
-            if row["buy_date"] > when:
+            time = datetime.fromisoformat(when)
+            if row["buy_date"] > time:
                 break
             if remainder < 0:
                 break
             remainder = remainder - row["amount"]
-            if amount < row["amount"]:
-                value = amount
-            else:
+            value = Decimal(amount)
+            if value >= row["amount"]:
                 value = row["amount"]
-            holding_period = when - row["buy_date"]
-            price_difference = price - row["quote"]
+            holding_period = time - row["buy_date"]
+            price_difference = Decimal(price) - row["quote"]
             # calculate the tax base for the position
             brutto_tax_base = value * price_difference
             # deduce the loss balance from the tax base and reduce the loss balance by that amount
@@ -98,3 +99,35 @@ class TaxMachine:
                     }
                 )
         return taxation_table
+
+    def post_sell(
+        self,
+        amount: Decimal,
+        currency: str,
+        when: datetime,
+        price: Decimal,
+        fees: Decimal,
+    ):
+        """
+        :param amount: how much to buy or sell
+        :param currency: in which currency to buy or sell
+        :param when: planned datetime of the transaction to calculate the tax for
+        :param price: price in quote currency
+        :param quote: price in quote currency
+        :param fees: transaction fee in domestic currency
+        :return: taxation table for different FIFO positions needed for the transaction
+        """
+        # calculate the taxation table
+        taxation_table = self.calculate(
+            "sell",
+            amount,
+            currency,
+            price,
+            "EUR",
+            when,
+            fees,
+        )
+        # extract the tax base from the taxation table
+        tax_base = sum([row["Tax Base"] for row in taxation_table])
+        # add to the loss balance
+        self.account_accrued_losses += tax_base

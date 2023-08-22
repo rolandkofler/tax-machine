@@ -11,6 +11,7 @@ from germany.taxmachine import TaxMachine
 # Step implementations
 @given("a wallet with multiple FIFO positions.")
 @given("a wallet with")
+@given("a wallet with a single position.")
 def step_account_with_balance(context):
     """
     :type context: behave.runner.Context
@@ -89,3 +90,25 @@ def the_tax_machine_should_show_tax_table(context):
             + " but is "
             + str(holding_period)
         )
+
+
+@when("I book in a Sale of {amount} {currency} for {price} EUR on {when}")
+def step_impl(context, amount: Decimal, currency, price: Decimal, when: datetime):
+    """
+    :type context: behave.runner.Context
+    """
+    taxmachine: TaxMachine = context.taxmachine
+    taxmachine.post_sell(amount, currency, when, price, Decimal(0))
+
+
+@then("the loss balance is {amount} EUR")
+def step_impl(context, amount: Decimal):
+    """
+    :type context: behave.runner.Context
+    """
+    assert context.taxmachine.account_accrued_losses == Decimal(amount), (
+        "loss balance should be "
+        + str(amount)
+        + " but is "
+        + str(context.taxmachine.account_accrued_losses)
+    )
