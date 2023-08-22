@@ -72,7 +72,12 @@ def the_tax_machine_should_show_tax_table(context):
     assert context.taxation_table is not None
     for rowShould, rowIs in zip(context.table, context.taxation_table):
         assert rowShould["Asset"] == rowIs["Asset"]
-        assert Decimal(rowShould["Amount"]) == rowIs["Amount"]
+        assert Decimal(rowShould["Amount"]) == rowIs["Amount"], (
+            "amount should be "
+            + rowShould["Amount"]
+            + " but is "
+            + str(rowIs["Amount"])
+        )
         holding_period = rowIs["Holding Period"]
         # parse rowShould["Holding Period"] as a string of ISO 8601 duration and convert to timedelta
         holding_periodShould = isodate.parse_duration(

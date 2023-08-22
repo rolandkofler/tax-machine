@@ -72,10 +72,14 @@ class TaxMachine:
             if remainder < 0:
                 break
             remainder = remainder - row["amount"]
+            if amount < row["amount"]:
+                value = amount
+            else:
+                value = row["amount"]
             holding_period = when - row["buy_date"]
             price_difference = price - row["quote"]
             # calculate the tax base for the position
-            brutto_tax_base = row["amount"] * price_difference
+            brutto_tax_base = value * price_difference
             # deduce the loss balance from the tax base and reduce the loss balance by that amount
             if brutto_tax_base < self.account_accrued_losses:
                 netto_tax_base = Decimal(0)
